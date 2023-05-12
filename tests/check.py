@@ -70,24 +70,21 @@ def main():
 def check_fnv1_hash(sources):
   PATTERN = r'CASE_ATTRIB\(\s*"([A-Za-z0-9_]+)"\s*,\s*(0x[0-9abcdef]+)\)'
   for file in sources:
-    fp = open(file, 'r')
-    
-    line_no = 0
-    for line in fp.readlines():
-      line_no += 1
-      match = re.findall(PATTERN, line)
-      if len(match) == 0: continue
-      name, val = match[0]
-      hash = hex(fnv1a_hash(name))
-      
-      if val == hash: continue
-      
-      ## Path of the file relative to top-level.
-      file_path = to_tolevel_path(file)
-      report_error(f"{location(file_path, line_no)} - hash mismatch. "
-        f"hash('{name}') = {hash} not {val}")
-        
-    fp.close()
+    with open(file, 'r') as fp:
+      line_no = 0
+      for line in fp:
+        line_no += 1
+        match = re.findall(PATTERN, line)
+        if len(match) == 0: continue
+        name, val = match[0]
+        hash = hex(fnv1a_hash(name))
+
+        if val == hash: continue
+
+        ## Path of the file relative to top-level.
+        file_path = to_tolevel_path(file)
+        report_error(f"{location(file_path, line_no)} - hash mismatch. "
+          f"hash('{name}') = {hash} not {val}")
 
 ## Check each source file ('.c', '.h', '.py') in the [dirs] contains tabs,
 ## more than 79 characters, and trailing white space.
@@ -97,55 +94,52 @@ def check_static(dirs):
     for file in listdir(dir):
       if not file.endswith(CHECK_EXTENTIONS): continue
       if os.path.isdir(join(dir, file)): continue
-      
-      fp = open(join(dir, file), 'r')
-      
-      ## Path of the file relative to top-level.
-      file_path = to_tolevel_path(join(dir, file))
 
-      ## This will be set to true if the last line is empty.
-      is_last_empty = False; line_no = 0
-      for line in fp.readlines():
-        line_no += 1; line = line[:-1] # remove the line ending.
-        
-        ## Check if the line contains any tabs.
-        if '\t' in line:
-          _location = location(file_path, line_no)
-          report_error(f"{_location} - contains tab(s) ({repr(line)}).")
-            
-        if len(line) >= 80:
-          skip = False
-          for ignore in ALLOW_LONG:
-            if ignore in line: skip = True; break
-          if skip: continue
-          
-          _location = location(file_path, line_no)
-          report_error(
-            f"{_location} - contains {len(line)} (> 79) characters.")
-            
-        if line.endswith(' '):
-          _location = location(file_path, line_no)
-          report_error(f"{_location} - contains trailing white space.")
-            
-        if line == '':
-          if is_last_empty:
+      with open(join(dir, file), 'r') as fp:
+        ## Path of the file relative to top-level.
+        file_path = to_tolevel_path(join(dir, file))
+
+        ## This will be set to true if the last line is empty.
+        is_last_empty = False
+        line_no = 0
+        for line in fp:
+          line_no += 1
+          line = line[:-1] # remove the line ending.
+
+          ## Check if the line contains any tabs.
+          if '\t' in line:
             _location = location(file_path, line_no)
-            report_error(f"{_location} - consequent empty lines.")
-          is_last_empty = True
-        else:
-          is_last_empty = False
-        
-      fp.close()
+            report_error(f"{_location} - contains tab(s) ({repr(line)}).")
+
+          if len(line) >= 80:
+            skip = any(ignore in line for ignore in ALLOW_LONG)
+            if skip: continue
+
+            _location = location(file_path, line_no)
+            report_error(
+              f"{_location} - contains {len(line)} (> 79) characters.")
+
+          if line.endswith(' '):
+            _location = location(file_path, line_no)
+            report_error(f"{_location} - contains trailing white space.")
+
+          if line == '':
+            if is_last_empty:
+              _location = location(file_path, line_no)
+              report_error(f"{_location} - consequent empty lines.")
+            is_last_empty = True
+          else:
+            is_last_empty = False
 
 ## Assert all the content of the headers list below are the same.
 def check_common_header_match(headers):
   headers = list(headers)
-  assert len(headers) >= 1
-  
+  assert headers
+
   content = ''
   with open(headers[0], 'r') as f:
     content = f.read()
-  
+
   for i in range(1, len(headers)):
     with open(headers[i], 'r') as f:
       if f.read() != content:

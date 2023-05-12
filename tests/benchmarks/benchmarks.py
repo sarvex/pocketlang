@@ -65,7 +65,6 @@ def run_all_benchmarsk():
         print() # Skip the line.
         error_exit(r'elapsed:\s*([0-9\.]+)\s*s --> no mach found.')
       print('%.6fs'%float(time[0]))
-  pass
 
 def _run_command(command):
   return subprocess.run(command,
@@ -106,11 +105,11 @@ def update_interpreters():
 def _get_pocket_binary():
   system = platform.system()
   if system not in SYSTEM_TO_BINARY_PATH:
-    error_exit("Unsupported platform %s" % system)
+    error_exit(f"Unsupported platform {system}")
 
   pocket = abspath(join(THIS_PATH, SYSTEM_TO_BINARY_PATH[system]))
   if not os.path.exists(pocket):
-    error_exit("Pocket interpreter not found at: '%s'" % pocket)
+    error_exit(f"Pocket interpreter not found at: '{pocket}'")
 
   return pocket
 
@@ -118,7 +117,7 @@ def _get_pocket_binary():
 ## as (lang, interp, val) tuple, where the val is the additional.
 ## data related to the interpreter.
 def _find_interp(lang, interpreter, val):
-  print('%-25s' % ('Searching for %s ' % lang), end='')
+  print('%-25s' % f'Searching for {lang} ', end='')
   sys.stdout.flush()
   if which(interpreter):
     print_success('-- found')
@@ -137,7 +136,7 @@ def get_ext(file_name):
 
 def print_title(title):
   print("----------------------------------")
-  print(" %s " % title)
+  print(f" {title} ")
   print("----------------------------------")
 
 ## ANSI color codes to print messages.

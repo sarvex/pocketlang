@@ -1,16 +1,10 @@
 from time import process_time as clock
 
 def is_prime(n):
-	if n < 2 : return False
-	for i in range(2, n):
-		if n % i == 0 : return False
-	return True
+	return False if n < 2 else all(n % i != 0 for i in range(2, n))
 
 start = clock()
 
-N = 30000; primes = []
-for i in range(N):
-	if is_prime(i):
-		primes.append(i)
-
+N = 30000
+primes = [i for i in range(N) if is_prime(i)]
 print("elapsed:", clock() - start, "s")

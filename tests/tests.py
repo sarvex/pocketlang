@@ -65,13 +65,13 @@ def run_all_tests():
 
 def run_test_file(pocket, test, path):
   FMT_PATH = "%-25s"
-  INDENTATION = '  | '
   print(FMT_PATH % test, end='')
 
   sys.stdout.flush()
   result = run_command([pocket, path])
   if result.returncode != 0:
     print_error('-- Failed')
+    INDENTATION = '  | '
     err = INDENTATION + result.stderr \
         .decode('utf8')               \
         .replace('\n', '\n' + INDENTATION)
@@ -84,11 +84,11 @@ def run_test_file(pocket, test, path):
 def get_pocket_binary():
   system = platform.system()
   if system not in SYSTEM_TO_BINARY_PATH:
-    error_exit("Unsupported platform %s" % system)
+    error_exit(f"Unsupported platform {system}")
 
   pocket = abspath(join(THIS_PATH, SYSTEM_TO_BINARY_PATH[system]))
   if not os.path.exists(pocket):
-    error_exit("Pocket interpreter not found at: '%s'" % pocket)
+    error_exit(f"Pocket interpreter not found at: '{pocket}'")
 
   return pocket
 
@@ -133,7 +133,7 @@ def error_exit(msg):
 
 def print_title(title):
   print("----------------------------------")
-  print(" %s " % title)
+  print(f" {title} ")
   print("----------------------------------")
   
 if __name__ == '__main__':

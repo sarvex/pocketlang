@@ -106,7 +106,6 @@ def main():
                                      WASM_SOURCE_FILES)
 
       write_page(ctx, _template, dst)
-  pass
 
 def generate_navigation():
   navigation = ''
@@ -144,7 +143,7 @@ def generate_page_context(src, dst, navigation):
   ctx[ '{{ TITLE }}'      ] = title
   ctx[ '{{ NAVIGATION }}' ] = navigation
   ctx[ '{{ CONTENT }}'    ] = content
-  ctx[ '{{ HOME_URL }}'   ] = ROOT_URL + 'index.html'
+  ctx[ '{{ HOME_URL }}'   ] = f'{ROOT_URL}index.html'
   ctx[ '{{ STATIC_DIR }}' ] = STATIC_DIR
   return ctx;
 
@@ -189,7 +188,7 @@ def custom_md_override(text):
 
   ## Add html anchor.
   for pre in ('#', '##', '###'):
-    pattern = '(^' + pre + r' \s*%%(.*)%%\n)'
+    pattern = f'(^{pre}' + r' \s*%%(.*)%%\n)'
     for match, title in re.findall(pattern, text, flags=re.MULTILINE):
       link = title.strip().lower().replace(' ', '-')
       text = text.replace(match,
@@ -210,11 +209,11 @@ def custom_html_override(src, content):
   ]
 
   for kw in addnl_keywords:
-    content = content.replace('<span class="n">%s</span>' % kw,
-                              '<span class="k">%s</span>' % kw)
+    content = content.replace(f'<span class="n">{kw}</span>',
+                              f'<span class="k">{kw}</span>')
   for nk in not_keyword:
-    content = content.replace('<span class="k">%s</span>' % nk,
-                              '<span class="n">%s</span>' % nk)
+    content = content.replace(f'<span class="k">{nk}</span>',
+                              f'<span class="n">{nk}</span>')
 
   ## codehilite mark the compilation command as error.
   content = content.replace('<span class="err">', '<span>')
@@ -236,12 +235,7 @@ def write_page(ctx, template, dst):
     f.write(page)
 
 if __name__ == '__main__':
-  _local = False
-  if len(sys.argv) >= 2:
-    if sys.argv[1] == 'local':
-      _local = True
-      #ROOT_URL = 'http://localhost:8000/'
-
+  _local = len(sys.argv) >= 2 and sys.argv[1] == 'local'
   ROOT_URL = '' ## No more nested directory pages.
 
   main()
